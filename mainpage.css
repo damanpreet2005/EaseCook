@@ -82,13 +82,32 @@ body{
     background-size: cover;
     width: 100%;
     height: auto;
+    margin-top: -30px;
+    margin-left: -10px;
+    margin-right: -30px;
     top: 0;
 
 }
 #title{
     padding-top: 30%;
-    color:#bbbbbbb0;
+    color:white;
     font-weight: bold;
-    padding-bottom: 10px;
-    padding-left: 10px;
+    padding-bottom: 20px;
+    padding-left: 25px;
+}
+
+/* Footer for the webpage */
+footer{
+    position: fixed;
+    bottom: 0;
+    background-color: rgb(00, 00, 00, 0.9);
+    color: rgba(255, 255, 255,0.7);
+    width: 100%;
+    margin: -10px;
+    text-align: center;
+    align-content: center;
+    height: 200px;
+}
+footer i{
+    color: white;
 }
