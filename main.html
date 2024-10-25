@@ -5114,7 +5114,7 @@
     video {
       display: none;
       border-radius: 8px;
-      max-width: 400px;
+      max-width: 100%;
       height: auto;
       box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
       margin-bottom: 15px;
@@ -5412,6 +5412,7 @@
                                             <button id="openCamera" class="button">Open Camera</button>
                                             <video id="camera" autoplay playsinline></video>
                                             <button id="capture" class="button" style="display: none;">Take Photo</button>
+                                            <button id="submit" class="button" style="display: none;">Submit Photos</button>
                                           </div>
                                           <div class="thumbnails" id="thumbnails"></div>
                                         </div>
@@ -5749,17 +5750,20 @@
   <script>
     const openCameraButton = document.getElementById('openCamera');
     const captureButton = document.getElementById('capture');
+    const submitButton = document.getElementById('submit');
     const video = document.getElementById('camera');
     const thumbnailsContainer = document.getElementById('thumbnails');
     let stream;
+    let capturedImages = [];
 
-    // Open camera only when the button is clicked
+    // Open camera when the button is clicked
     openCameraButton.addEventListener('click', async () => {
       try {
         stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
         video.srcObject = stream;
         video.style.display = 'block';
         captureButton.style.display = 'inline-block';
+        submitButton.style.display = 'inline-block';
         openCameraButton.style.display = 'none';
       } catch (error) {
         console.error("Camera access error:", error);
@@ -5779,6 +5783,16 @@
       thumbnail.src = canvas.toDataURL('image/png');
       thumbnail.className = 'thumbnail';
       thumbnailsContainer.appendChild(thumbnail);
+
+      // Store the image data URL
+      capturedImages.push(thumbnail.src);
+    });
+
+    // Submit captured images
+    submitButton.addEventListener('click', () => {
+      console.log("Captured Images:", capturedImages); // Log images to console
+      alert("Captured images have been logged to the console. You can now send them to a server.");
+      // Here you could send `capturedImages` array to a server using fetch or axios.
     });
 
     // Optional: Stop the camera stream when done
