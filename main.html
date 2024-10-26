@@ -5148,8 +5148,12 @@
       border-radius: 5px;
       box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
     }
+    .popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; max-width: 400px; background: #fff; padding: 20px; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5); display: none; }
+    .popup h3 { margin-top: 0; }
+    .popup button { margin-top: 10px; }
 
   </style>
+
 
 </head>
 
@@ -5408,13 +5412,25 @@
                                                   images of the ingredients you wanna use to cook and see the magic
                                                   happen.</span></span></p>
                                           </div>
+                                          
                                           <div class="controls">
                                             <button id="openCamera" class="button">Open Camera</button>
                                             <video id="camera" autoplay playsinline></video>
                                             <button id="capture" class="button" style="display: none;">Take Photo</button>
                                             <button id="submit" class="button" style="display: none;">Submit Photos</button>
                                           </div>
-                                          <div class="thumbnails" id="thumbnails"></div>
+                                        
+                                          <!-- Preview section to display captured images -->
+                                          <div class="preview" id="imagePreview"></div>
+                                        
+                                          <!-- Popup for displaying ingredients and recipe -->
+                                          <div id="popup" class="popup">
+                                            <h3>Ingredients and Recipe</h3>
+                                            <div id="ingredientList"></div>
+                                            <div id="recipeList"></div>
+                                            <button onclick="closePopup()">Close</button>
+                                          </div>
+                                          
                                         </div>
                                       </div>
                                     </div>
@@ -5746,6 +5762,101 @@
         aria-label="bottom of page"><span class="mHZSwn">bottom of page</span></div>
     </div>
   </div>
+
+  <script>
+    const openCameraButton = document.getElementById('openCamera');
+    const captureButton = document.getElementById('capture');
+    const submitButton = document.getElementById('submit');
+    const camera = document.getElementById('camera');
+    const imagePreview = document.getElementById('imagePreview');
+    const popup = document.getElementById('popup');
+    const ingredientList = document.getElementById('ingredientList');
+    const recipeList = document.getElementById('recipeList');
+    let capturedImages = [];
+
+    openCameraButton.addEventListener('click', async () => {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      camera.srcObject = stream;
+      camera.style.display = 'block';
+      captureButton.style.display = 'inline-block';
+    });
+
+    captureButton.addEventListener('click', () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = camera.videoWidth;
+      canvas.height = camera.videoHeight;
+      const context = canvas.getContext('2d');
+      context.drawImage(camera, 0, 0);
+      
+      // Convert the captured image to a blob and store it
+      canvas.toBlob(blob => {
+        capturedImages.push(blob);
+
+        // Show preview of the captured image
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(blob);
+        imagePreview.appendChild(img);
+
+        submitButton.style.display = 'inline-block';
+      });
+    });
+
+    submitButton.addEventListener('click', async () => {
+      if (capturedImages.length === 0) return;
+
+      const ingredientResults = [];
+
+      // Process each image with the VisionAgent
+      for (const image of capturedImages) {
+        const formData = new FormData();
+        formData.append('image', image);
+
+        try {
+          const visionResponse = await fetch("YOUR_VISION_AGENT_API_URL", {
+            method: 'POST',
+            headers: { 'Agent-ID': 'plugin-1712327325' },
+            body: formData
+          });
+          const visionData = await visionResponse.json();
+          const ingredients = visionData.ingredients || [];
+          ingredientResults.push(...ingredients);
+        } catch (error) {
+          console.error("Error processing image:", error);
+        }
+      }
+
+      // Display ingredients in popup
+      ingredientList.innerHTML = `<strong>Ingredients Detected:</strong><ul>${ingredientResults.map(ing => `<li>${ing}</li>`).join('')}</ul>`;
+
+      // Send ingredients to MediaKnowledgeAgent for recipe suggestions
+      try {
+        const mediaResponse = await fetch("YOUR_MEDIA_KNOWLEDGE_AGENT_API_URL", {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Agent-ID': 'plugin-1713962163'
+          },
+          body: JSON.stringify({ ingredients: ingredientResults })
+        });
+
+        const mediaData = await mediaResponse.json();
+        const recipes = mediaData.recipes || [];
+
+        // Display recipes in popup
+        recipeList.innerHTML = `<strong>Recipes Suggested:</strong><ul>${recipes.map(recipe => `<li>${recipe}</li>`).join('')}</ul>`;
+
+        // Show popup with results
+        popup.style.display = 'block';
+
+      } catch (error) {
+        console.error("Error retrieving recipes:", error);
+      }
+    });
+
+    function closePopup() {
+      popup.style.display = 'none';
+    }
+  </script>
 
   <script>
     const openCameraButton = document.getElementById('openCamera');

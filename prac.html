@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Recipe Finder</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .button { padding: 10px; margin: 5px; cursor: pointer; background-color: black; color: white; border: none; border-radius: 5px; }
+        .button:hover { background-color: #333; }
+        .preview img { width: 100px; height: 100px; margin: 5px; border-radius: 5px; }
+        .controls, .results { margin-top: 20px; }
+        .results ul { list-style: none; padding: 0; }
+        .results li { padding: 5px 0; }
+    </style>
+</head>
+<body>
+
+<h2>Capture Ingredients and Find Recipes</h2>
+
+<div class="controls">
+    <button id="openCamera" class="button">Open Camera</button>
+    <video id="camera" autoplay playsinline style="display:none;"></video>
+    <button id="capture" class="button" style="display: none;">Take Photo</button>
+    <button id="submit" class="button" style="display: none;">Get Recipe</button>
+</div>
+
+<div class="preview" id="imagePreview"></div>
+<div class="results" id="resultsSection"></div>
+
+<script>
+    const openCameraButton = document.getElementById('openCamera');
+    const captureButton = document.getElementById('capture');
+    const submitButton = document.getElementById('submit');
+    const camera = document.getElementById('camera');
+    const imagePreview = document.getElementById('imagePreview');
+    const resultsSection = document.getElementById('resultsSection');
+    let capturedImages = [];
+
+    const apiKey = "iceZdpYXbPSWyg4ceujbRwaeXeOkq9re"; // Your API key
+
+    openCameraButton.addEventListener('click', async () => {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        camera.srcObject = stream;
+        camera.style.display = 'block';
+        captureButton.style.display = 'inline-block';
+    });
+
+    captureButton.addEventListener('click', () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = camera.videoWidth;
+        canvas.height = camera.videoHeight;
+        const context = canvas.getContext('2d');
+        context.drawImage(camera, 0, 0);
+        canvas.toBlob(blob => {
+            capturedImages.push(blob);
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(blob);
+            imagePreview.appendChild(img);
+            submitButton.style.display = 'inline-block';
+        });
+    });
+
+    submitButton.addEventListener('click', async () => {
+        if (capturedImages.length === 0) return;
+        let ingredients = [];
+    
+        for (const image of capturedImages) {
+            const formData = new FormData();
+            formData.append('image', image);
+    
+            try {
+                const visionAPIUrl = "YOUR_VISION_API_ENDPOINT"; // Make sure this is correct
+                console.log("Sending image to Vision API...");
+                const visionResponse = await fetch(visionAPIUrl, {
+                    method: 'POST', // Ensure this matches the API's expected method
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`, // Use your API key
+                    },
+                    body: formData
+                });
+    
+                if (!visionResponse.ok) {
+                    const errorText = await visionResponse.text(); // Get the error text if not OK
+                    console.error("Vision API error response:", errorText);
+                    throw new Error(`Vision API error: ${visionResponse.statusText}`);
+                }
+    
+                const visionData = await visionResponse.json();
+                ingredients.push(...visionData.ingredients); // Adjust according to the response structure
+            } catch (error) {
+                console.error("Error fetching ingredients:", error);
+                alert("Failed to fetch ingredients from the image. Please try again.");
+                return;
+            }
+        }
+    });
+</script>
+
+</body>
+</html>
