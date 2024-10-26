@@ -53,6 +53,5 @@ def generate_recipe(ingredients):
     recipe = postprocess_output(output)  # Convert model output to recipe text
     return recipe
 
-if __name__ == '__main__':
-    app.run(debug=True)
-
+    if __name__ == '__main__':
+        app.run(debug=True)

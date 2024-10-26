@@ -63,36 +63,26 @@
 
     submitButton.addEventListener('click', async () => {
         if (capturedImages.length === 0) return;
-        let ingredients = [];
     
-        for (const image of capturedImages) {
-            const formData = new FormData();
-            formData.append('image', image);
+        const formData = new FormData();
+        formData.append('image', capturedImages[0]);  // Sending only the first image
     
-            try {
-                const visionAPIUrl = "YOUR_VISION_API_ENDPOINT"; // Make sure this is correct
-                console.log("Sending image to Vision API...");
-                const visionResponse = await fetch(visionAPIUrl, {
-                    method: 'POST', // Ensure this matches the API's expected method
-                    headers: {
-                        'Authorization': `Bearer ${apiKey}`, // Use your API key
-                    },
-                    body: formData
-                });
+        try {
+            const response = await fetch('http://localhost:5000/process_image', {  // Ensure this URL matches the Flask app URL
+                method: 'POST',
+                body: formData
+            });
     
-                if (!visionResponse.ok) {
-                    const errorText = await visionResponse.text(); // Get the error text if not OK
-                    console.error("Vision API error response:", errorText);
-                    throw new Error(`Vision API error: ${visionResponse.statusText}`);
-                }
-    
-                const visionData = await visionResponse.json();
-                ingredients.push(...visionData.ingredients); // Adjust according to the response structure
-            } catch (error) {
-                console.error("Error fetching ingredients:", error);
-                alert("Failed to fetch ingredients from the image. Please try again.");
-                return;
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || "Error fetching recipes");
             }
+    
+            const recipeData = await response.json();
+            resultsSection.innerHTML = `<h3>Your Recipe</h3><p>${recipeData.recipe}</p>`;
+        } catch (error) {
+            console.error("Error fetching recipes:", error);
+            alert("Failed to fetch recipes. Please try again.");
         }
     });
 </script>
