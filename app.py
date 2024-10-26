@@ -1,57 +1,51 @@
+import torch
 from flask import Flask, request, jsonify
-from flask_cors import CORS
-import requests
-import torch  # Assuming a PyTorch model
 from PIL import Image
-import io
+from torchvision import transforms
+from transformers import GPT2Tokenizer, GPT2LMHeadModel
+import ingredient_detection_model  # Import your ingredient detection model
+import recipe_generation_model      # Import your recipe generation model
 
 app = Flask(__name__)
-CORS(app)
 
-# Replace with your Vision API key and endpoint
-VISION_API_KEY = '<replace_vision_api_key>'
-VISION_API_URL = 'YOUR_VISION_API_ENDPOINT'
+# Load the ingredient detection model
+ingredient_model = ingredient_detection_model.load_model()  # Load your model
+ingredient_model.eval()  # Set the model to evaluation mode
 
-# Load your custom model (adjust path and loading as necessary)
-model = torch.load("path_to_your_trained_model.pt")  # Adjust for your model
+# Load the recipe generation model
+tokenizer = recipe_generation_model.load_tokenizer()  # Load the tokenizer
+recipe_model = recipe_generation_model.load_model()     # Load the model
+recipe_model.eval()  # Set the model to evaluation mode
+
+# Define image transformation for ingredient detection
+image_transform = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+])
 
 @app.route('/process_image', methods=['POST'])
 def process_image():
     if 'image' not in request.files:
         return jsonify({"error": "No image provided"}), 400
 
-    # Process the uploaded image
-    image = request.files['image']
-    image_data = Image.open(io.BytesIO(image.read()))
+    # Load and preprocess the image
+    image = Image.open(request.files['image'])
+    image = image_transform(image).unsqueeze(0)  # Add batch dimension
 
-    # Call the Vision API for ingredient detection
-    headers = {'Authorization': f'Bearer {VISION_API_KEY}'}
-    files = {'image': image}
-    vision_response = requests.post(VISION_API_URL, headers=headers, files=files)
-
-    if not vision_response.ok:
-        return jsonify({"error": "Vision API request failed"}), 500
-
-    # Get detected ingredients
-    ingredients = vision_response.json().get('ingredients', [])
-
-    # Generate a recipe using your model (you’ll need a function to handle input format)
-    try:
-        # Convert ingredients into a format suitable for the model
-        recipe = generate_recipe(ingredients)  # Assumes a function to generate recipes from ingredients
-    except Exception as e:
-        return jsonify({"error": f"Recipe generation failed: {str(e)}"}), 500
-
-    return jsonify({"recipe": recipe})
-
-def generate_recipe(ingredients):
-    # Example generation process; replace with model-specific code
-    # Assuming ingredients are preprocessed into model input format
-    input_data = preprocess_ingredients_for_model(ingredients)
+    # Detect ingredients
     with torch.no_grad():
-        output = model(input_data)
-    recipe = postprocess_output(output)  # Convert model output to recipe text
-    return recipe
+        outputs = ingredient_model(image)
+        _, predicted = torch.max(outputs, 1)
+        ingredient_names = [ingredient_detection_model.dataset.classes[i] for i in predicted.tolist()]  # Get ingredient names
 
-    if __name__ == '__main__':
-        app.run(debug=True)
+    # Generate a recipe with the identified ingredients
+    input_text = "Ingredients: " + ", ".join(ingredient_names) + ". Recipe:"
+    inputs = tokenizer(input_text, return_tensors="pt")
+    outputs = recipe_model.generate(inputs.input_ids, max_length=200)
+    recipe = tokenizer.decode(outputs[0], skip_special_tokens=True)
+
+    return jsonify({"ingredients": ingredient_names, "recipe": recipe})
+
+if __name__ == '__main__':
+    app.run(debug=True)
