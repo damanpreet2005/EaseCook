@@ -17,7 +17,6 @@ EaseCook is an AI-powered recipe assistant that helps you cook effortlessly with
 - ![Node.js](https://img.shields.io/badge/-Node.js-339933?style=flat&logo=node.js&logoColor=white) **Node.js**
 
 ### AI & Machine Learning
-- ![TensorFlow](https://img.shields.io/badge/-TensorFlow-FF6F00?style=flat&logo=tensorflow&logoColor=white) **TensorFlow** – for ingredient recognition and recipe generation
 - ![OpenCV](https://img.shields.io/badge/-OpenCV-5C3EE8?style=flat&logo=opencv&logoColor=white) **OpenCV** – for image processing and ingredient identification
 - ![PyTorch](https://img.shields.io/badge/-PyTorch-EE4C2C?style=flat&logo=pytorch&logoColor=white) **PyTorch** – for training and deploying machine learning models
 
