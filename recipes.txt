@@ -1,0 +1,8 @@
+apple_pie/1000.jpg,2 cups apples, 1 cup sugar, 1 tsp cinnamon, 1 pie crust, Mix ingredients and bake at 375°F for 45 minutes.
+spaghetti_bolognese/1000.jpg,400g spaghetti, 250g ground beef, 1 onion, 400g tomatoes, Cook spaghetti and sauté beef with onion. Mix and serve.
+caesar_salad/1000.jpg,1 romaine lettuce, 1/4 cup parmesan cheese, 1/2 cup croutons, 1/4 cup caesar dressing, Toss all ingredients and serve chilled.
+chocolate_cake/1000.jpg,1 cup sugar, 1/2 cup butter, 2 eggs, 1 cup flour, 1/2 cup cocoa powder, Mix ingredients and bake at 350°F for 30 minutes.
+fried_rice/1000.jpg,2 cups cooked rice, 1 cup mixed vegetables, 2 eggs, 3 tbsp soy sauce, Stir-fry all ingredients together in a hot pan.
+hamburger/1000.jpg,500g ground beef, 4 burger buns, 1 cup lettuce, 1 tomato, Grill beef patties, assemble with buns and toppings.
+pancakes/1000.jpg,1 cup flour, 2 tbsp sugar, 1 cup milk, 1 egg, Mix ingredients and cook on a skillet until golden brown.
+sushi/1000.jpg,2 cups sushi rice, 4 sheets nori, 1 cucumber, 1 avocado, Prepare rice, slice vegetables, roll ingredients in nori.

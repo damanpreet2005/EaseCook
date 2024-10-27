@@ -54,3 +54,38 @@ for epoch in range(epochs):
 # Save the trained ingredient detection model
 torch.save(model.state_dict(), 'ingredient_detection_model.pth')
 print("Ingredient detection model saved as 'ingredient_detection_model.pth'")
+if not os.path.exists('Dataset'):
+    raise FileNotFoundError("The directory 'Dataset' does not exist.")
+
+# Load the dataset
+dataset = ImageFolder(root='Dataset', transform=transform)
+
+# Verify the loaded dataset
+print(f"Number of images in the dataset: {len(dataset)}")
+import os
+import torch
+from torchvision import datasets, transforms
+from torch.utils.data import DataLoader
+
+# Define the transformations
+transform = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+])
+
+# Load the dataset using ImageFolder
+dataset = datasets.ImageFolder(root='Dataset', transform=transform)
+
+# Create a DataLoader for batch processing
+dataloader = DataLoader(dataset, batch_size=2, shuffle=True)
+
+# Verify the loaded dataset
+print(f"Number of images in the dataset: {len(dataset)}")
+print(f"Classes found: {dataset.classes}")
+
+# Iterate through the DataLoader to fetch a batch of images and labels
+for images, labels in dataloader:
+    print(f"Batch of images: {images.size()}")
+    print(f"Batch of labels: {labels.size()}")
+    break  # Just show the first batch
